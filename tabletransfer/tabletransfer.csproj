@@ -1,7 +1,21 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.1;netstandard2.0;net45</TargetFrameworks>
+		<Authors>Benji Altman</Authors>
+		<Company></Company>
+		<Description>C# library for transfering tables</Description>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<Copyright>MIT</Copyright>
+		<PackageProjectUrl>https://github.com/theGerk/tabletransfer</PackageProjectUrl>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.1|AnyCPU'">
+	  <DocumentationFile>C:\Users\Benji\source\repos\tabletransfer\tabletransfer\tabletransfer.xml</DocumentationFile>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.1|AnyCPU'">
+	  <DocumentationFile>C:\Users\Benji\source\repos\tabletransfer\tabletransfer\tabletransfer.xml</DocumentationFile>
 	</PropertyGroup>
 
 </Project>

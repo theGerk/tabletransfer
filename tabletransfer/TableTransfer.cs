@@ -36,8 +36,12 @@ namespace TableTransfer
 		{
 			using BinaryWriter writer = new BinaryWriter(stream, System.Text.Encoding.Default, true);
 
+			// write version
+			writer.Write((UInt32)Assembly.GetExecutingAssembly().GetName().Version.Major);
+
 			foreach (Type type in types)
 			{
+
 			}
 		}
 	}
