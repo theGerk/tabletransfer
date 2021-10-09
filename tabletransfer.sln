@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31702.278
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tabletransfer", "tabletransfer\tabletransfer.csproj", "{48E33FA8-A353-4640-AAD0-18372BBEA34C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "tabletransfer", "tabletransfer\tabletransfer.csproj", "{48E33FA8-A353-4640-AAD0-18372BBEA34C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tabletransfer.test", "tabletransfer.test\tabletransfer.test.csproj", "{05E10FC7-0D77-4A63-AA08-0C4DFA73BFFB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{48E33FA8-A353-4640-AAD0-18372BBEA34C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{48E33FA8-A353-4640-AAD0-18372BBEA34C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{48E33FA8-A353-4640-AAD0-18372BBEA34C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05E10FC7-0D77-4A63-AA08-0C4DFA73BFFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05E10FC7-0D77-4A63-AA08-0C4DFA73BFFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05E10FC7-0D77-4A63-AA08-0C4DFA73BFFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05E10FC7-0D77-4A63-AA08-0C4DFA73BFFB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

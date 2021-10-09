@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Runtime.Serialization;
 
-namespace TableTransfer
+namespace tabletransfer
 {
 	public abstract class ReadException : Exception
 	{

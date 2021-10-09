@@ -5,17 +5,17 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace TableTransfer
+namespace tabletransfer
 {
 	public static class TableTransfer
 	{
 		public enum Type : Int32
 		{
 			Bool,
-			Uint8,
-			Uint16,
-			Uint32,
-			Uint64,
+			UInt8,
+			UInt16,
+			UInt32,
+			UInt64,
 			Int8,
 			Int16,
 			Int32,
@@ -34,6 +34,10 @@ namespace TableTransfer
 		{
 			public Type type;
 			public bool nullable;
+
+#if NETSTANDARD
+			public static implicit operator FullType((Type type, bool nullable) arg) => new FullType() { type = arg.type, nullable = arg.nullable };
+#endif
 		}
 
 		public struct ReadReturn
@@ -54,9 +58,10 @@ namespace TableTransfer
 		/// <returns></returns>
 		public static ReadReturn Read(Stream stream)
 		{
-			ReadReturn output = new ReadReturn();
-			using (var reader = new BinaryReader(stream, System.Text.Encoding.Default, true))
+			var reader = new BinaryReader(stream, System.Text.Encoding.Default, true);
+			try
 			{
+				ReadReturn output = new ReadReturn();
 				// read version
 				{
 					var myVersion = Assembly.GetExecutingAssembly().GetName();
@@ -91,130 +96,142 @@ namespace TableTransfer
 				output.values = ReadRows(reader, columns, output.types);
 				return output;
 			}
+			catch
+			{
+				reader.Dispose();
+				throw;
+			}
 		}
 
 		private static IEnumerable<object[]> ReadRows(BinaryReader reader, uint columns, FullType[] types)
 		{
-			// variable is not currently used, but could be used for error/exception help and debugging
-			uint rowNum = 0;
-			while (reader.ReadBoolean())
+			try
 			{
-				object[] column = new object[columns];
-				for (uint i = 0; i < columns; i++)
+				// variable is not currently used, but could be used for error/exception help and debugging
+				uint rowNum = 0;
+				while (reader.ReadBoolean())
 				{
-					if (types[i].nullable)
-						switch (types[i].type)
-						{
-							case Type.Bool:
-								column[i] = reader.ReadNullableBoolean();
-								break;
-							case Type.Uint8:
-								column[i] = reader.ReadNullableByte();
-								break;
-							case Type.Uint16:
-								column[i] = reader.ReadNullableUInt16();
-								break;
-							case Type.Uint32:
-								column[i] = reader.ReadNullableUInt32();
-								break;
-							case Type.Uint64:
-								column[i] = reader.ReadNullableUInt64();
-								break;
-							case Type.Int8:
-								column[i] = reader.ReadNullableSByte();
-								break;
-							case Type.Int16:
-								column[i] = reader.ReadNullableInt16();
-								break;
-							case Type.Int32:
-								column[i] = reader.ReadNullableInt32();
-								break;
-							case Type.Int64:
-								column[i] = reader.ReadNullableInt64();
-								break;
-							case Type.Decimal:
-								column[i] = reader.ReadNullableDecimal();
-								break;
-							case Type.Float32:
-								column[i] = reader.ReadNullableSingle();
-								break;
-							case Type.Float64:
-								column[i] = reader.ReadNullableDouble();
-								break;
-							case Type.Guid:
-								column[i] = reader.ReadNullableGuid();
-								break;
-							case Type.String:
-								column[i] = reader.ReadNullableString();
-								break;
-							case Type.BinaryData:
-								column[i] = reader.ReadNullableBinaryData();
-								break;
-							case Type.DateTime:
-								column[i] = reader.ReadNullableDateTime();
-								break;
-							case Type.TimeSpan:
-								column[i] = reader.ReadNullableTimeSpan();
-								break;
-						}
-					else
-						switch (types[i].type)
-						{
-							case Type.Bool:
-								column[i] = reader.ReadBoolean();
-								break;
-							case Type.Uint8:
-								column[i] = reader.ReadByte();
-								break;
-							case Type.Uint16:
-								column[i] = reader.ReadUInt16();
-								break;
-							case Type.Uint32:
-								column[i] = reader.ReadUInt32();
-								break;
-							case Type.Uint64:
-								column[i] = reader.ReadUInt64();
-								break;
-							case Type.Int8:
-								column[i] = reader.ReadSByte();
-								break;
-							case Type.Int16:
-								column[i] = reader.ReadInt16();
-								break;
-							case Type.Int32:
-								column[i] = reader.ReadInt32();
-								break;
-							case Type.Int64:
-								column[i] = reader.ReadInt64();
-								break;
-							case Type.Decimal:
-								column[i] = reader.ReadDecimal();
-								break;
-							case Type.Float32:
-								column[i] = reader.ReadSingle();
-								break;
-							case Type.Float64:
-								column[i] = reader.ReadDouble();
-								break;
-							case Type.Guid:
-								column[i] = reader.ReadGuid();
-								break;
-							case Type.String:
-								column[i] = reader.ReadString();
-								break;
-							case Type.BinaryData:
-								column[i] = reader.ReadBinaryData();
-								break;
-							case Type.DateTime:
-								column[i] = reader.ReadDateTime();
-								break;
-							case Type.TimeSpan:
-								column[i] = reader.ReadTimeSpan();
-								break;
-						}
+					object[] column = new object[columns];
+					for (uint i = 0; i < columns; i++)
+					{
+						if (types[i].nullable)
+							switch (types[i].type)
+							{
+								case Type.Bool:
+									column[i] = reader.ReadNullableBoolean();
+									break;
+								case Type.UInt8:
+									column[i] = reader.ReadNullableByte();
+									break;
+								case Type.UInt16:
+									column[i] = reader.ReadNullableUInt16();
+									break;
+								case Type.UInt32:
+									column[i] = reader.ReadNullableUInt32();
+									break;
+								case Type.UInt64:
+									column[i] = reader.ReadNullableUInt64();
+									break;
+								case Type.Int8:
+									column[i] = reader.ReadNullableSByte();
+									break;
+								case Type.Int16:
+									column[i] = reader.ReadNullableInt16();
+									break;
+								case Type.Int32:
+									column[i] = reader.ReadNullableInt32();
+									break;
+								case Type.Int64:
+									column[i] = reader.ReadNullableInt64();
+									break;
+								case Type.Decimal:
+									column[i] = reader.ReadNullableDecimal();
+									break;
+								case Type.Float32:
+									column[i] = reader.ReadNullableSingle();
+									break;
+								case Type.Float64:
+									column[i] = reader.ReadNullableDouble();
+									break;
+								case Type.Guid:
+									column[i] = reader.ReadNullableGuid();
+									break;
+								case Type.String:
+									column[i] = reader.ReadNullableString();
+									break;
+								case Type.BinaryData:
+									column[i] = reader.ReadNullableBinaryData();
+									break;
+								case Type.DateTime:
+									column[i] = reader.ReadNullableDateTime();
+									break;
+								case Type.TimeSpan:
+									column[i] = reader.ReadNullableTimeSpan();
+									break;
+							}
+						else
+							switch (types[i].type)
+							{
+								case Type.Bool:
+									column[i] = reader.ReadBoolean();
+									break;
+								case Type.UInt8:
+									column[i] = reader.ReadByte();
+									break;
+								case Type.UInt16:
+									column[i] = reader.ReadUInt16();
+									break;
+								case Type.UInt32:
+									column[i] = reader.ReadUInt32();
+									break;
+								case Type.UInt64:
+									column[i] = reader.ReadUInt64();
+									break;
+								case Type.Int8:
+									column[i] = reader.ReadSByte();
+									break;
+								case Type.Int16:
+									column[i] = reader.ReadInt16();
+									break;
+								case Type.Int32:
+									column[i] = reader.ReadInt32();
+									break;
+								case Type.Int64:
+									column[i] = reader.ReadInt64();
+									break;
+								case Type.Decimal:
+									column[i] = reader.ReadDecimal();
+									break;
+								case Type.Float32:
+									column[i] = reader.ReadSingle();
+									break;
+								case Type.Float64:
+									column[i] = reader.ReadDouble();
+									break;
+								case Type.Guid:
+									column[i] = reader.ReadGuid();
+									break;
+								case Type.String:
+									column[i] = reader.ReadString();
+									break;
+								case Type.BinaryData:
+									column[i] = reader.ReadBinaryData();
+									break;
+								case Type.DateTime:
+									column[i] = reader.ReadDateTime();
+									break;
+								case Type.TimeSpan:
+									column[i] = reader.ReadTimeSpan();
+									break;
+							}
+					}
+					yield return column;
+					rowNum++;
 				}
-				yield return column;
-				rowNum++;
+			}
+			finally
+			{
+				reader.Dispose();
 			}
 		}
 
@@ -240,7 +257,6 @@ namespace TableTransfer
 					var nullable = fulltype.nullable;
 					writer.Write((UInt32)type);
 					writer.Write(nullable);
-					columns++;
 				}
 
 				// Write the column names if they are included
@@ -277,16 +293,16 @@ namespace TableTransfer
 									case Type.Bool:
 										writer.Write((bool?)columnEnumerator.Current);
 										break;
-									case Type.Uint8:
+									case Type.UInt8:
 										writer.Write((byte?)columnEnumerator.Current);
 										break;
-									case Type.Uint16:
+									case Type.UInt16:
 										writer.Write((UInt16?)columnEnumerator.Current);
 										break;
-									case Type.Uint32:
+									case Type.UInt32:
 										writer.Write((UInt32?)columnEnumerator.Current);
 										break;
-									case Type.Uint64:
+									case Type.UInt64:
 										writer.Write((UInt64?)columnEnumerator.Current);
 										break;
 									case Type.Int8:
@@ -332,16 +348,16 @@ namespace TableTransfer
 									case Type.Bool:
 										writer.Write((bool)columnEnumerator.Current);
 										break;
-									case Type.Uint8:
+									case Type.UInt8:
 										writer.Write((byte)columnEnumerator.Current);
 										break;
-									case Type.Uint16:
+									case Type.UInt16:
 										writer.Write((UInt16)columnEnumerator.Current);
 										break;
-									case Type.Uint32:
+									case Type.UInt32:
 										writer.Write((UInt32)columnEnumerator.Current);
 										break;
-									case Type.Uint64:
+									case Type.UInt64:
 										writer.Write((UInt64)columnEnumerator.Current);
 										break;
 									case Type.Int8:
