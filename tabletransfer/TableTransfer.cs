@@ -103,9 +103,16 @@ namespace tabletransfer
 			}
 		}
 
+		/// <summary>
+		/// Helper function for <see cref="Read(Stream)"/>. Reads through the rows yeild returning.
+		/// </summary>
+		/// <param name="reader">The reader object. Will need to be disposed at the end of this function.</param>
+		/// <param name="columns"></param>
+		/// <param name="types"></param>
+		/// <returns></returns>
 		private static IEnumerable<object[]> ReadRows(BinaryReader reader, uint columns, FullType[] types)
 		{
-			try
+			using (reader)
 			{
 				// variable is not currently used, but could be used for error/exception help and debugging
 				uint rowNum = 0;
@@ -229,12 +236,15 @@ namespace tabletransfer
 					rowNum++;
 				}
 			}
-			finally
-			{
-				reader.Dispose();
-			}
 		}
 
+		/// <summary>
+		/// Writes table to stream.
+		/// </summary>
+		/// <param name="stream"></param>
+		/// <param name="values"></param>
+		/// <param name="types"></param>
+		/// <param name="names"></param>
 		public static void Write(Stream stream, IEnumerable<IEnumerable<object>> values, IList<FullType> types, IEnumerable<string> names = null)
 		{
 			using (var writer = new BinaryWriter(stream, System.Text.Encoding.Default, true))
