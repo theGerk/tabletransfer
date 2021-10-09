@@ -6,12 +6,9 @@ using System.Threading.Tasks;
 
 namespace TableTransfer
 {
-
-
-
 	public static class TableTransfer
 	{
-		enum Type : UInt32
+		public enum Type : UInt32
 		{
 			Bool,
 			Uint8,
@@ -32,17 +29,33 @@ namespace TableTransfer
 			TimeSpan,
 		}
 
-		public static async Task WriteAsync(Stream stream, IEnumerable<IEnumerable<object>> values, IEnumerable<Type> types, IEnumerable<string> names = null)
+		public static void Write(Stream stream, IEnumerable<IEnumerable<object>> values, IEnumerable<Type> types, IEnumerable<string> names = null)
 		{
-			using BinaryWriter writer = new BinaryWriter(stream, System.Text.Encoding.Default, true);
+			using var writer = new BinaryWriter(stream, System.Text.Encoding.Default, true);
 
 			// write version
 			writer.Write((UInt32)Assembly.GetExecutingAssembly().GetName().Version.Major);
 
-			foreach (Type type in types)
-			{
+			uint columns = 0;
 
+			// get types data buffered into memory stream so we can count the number of them before writing out to the actual stream.
+			using (MemoryStream typeStream = new MemoryStream())
+			{
+				using (BinaryWriter typeWriter = new BinaryWriter(typeStream, System.Text.Encoding.Default, true))
+					foreach (Type type in types)
+					{
+						typeWriter.Write((UInt32)type);
+						columns++;
+					}
+
+				writer.Write(columns);
+
+				// copy buffered type data into stream
+				typeStream.Position = 0;
+				typeStream.CopyTo(stream);
 			}
+
+			// write the column names now
 		}
 	}
 }
