@@ -1,12 +1,17 @@
 ﻿using Gerk.BinaryExtension;
+using Gerk.LinqExtensions;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
 namespace tabletransfer
 {
+
 	public static class TableTransfer
 	{
 		public enum Type : Int32
@@ -30,6 +35,42 @@ namespace tabletransfer
 			TimeSpan,
 		}
 
+		private static readonly Dictionary<System.Type, FullType> mapping = new Dictionary<System.Type, FullType>()
+		{
+			[typeof(bool)] = new FullType() { type = Type.Bool, nullable = false },
+			[typeof(bool?)] = new FullType() { type = Type.Bool, nullable = true },
+			[typeof(byte)] = new FullType() { type = Type.UInt8, nullable = false },
+			[typeof(byte?)] = new FullType() { type = Type.UInt8, nullable = true },
+			[typeof(UInt16)] = new FullType() { type = Type.UInt16, nullable = false },
+			[typeof(UInt16?)] = new FullType() { type = Type.UInt16, nullable = true },
+			[typeof(UInt32)] = new FullType() { type = Type.UInt32, nullable = false },
+			[typeof(UInt32?)] = new FullType() { type = Type.UInt32, nullable = true },
+			[typeof(UInt64)] = new FullType() { type = Type.UInt64, nullable = false },
+			[typeof(UInt64?)] = new FullType() { type = Type.UInt64, nullable = true },
+			[typeof(sbyte)] = new FullType() { type = Type.Int8, nullable = false },
+			[typeof(sbyte?)] = new FullType() { type = Type.Int8, nullable = true },
+			[typeof(Int16)] = new FullType() { type = Type.Int16, nullable = false },
+			[typeof(Int16?)] = new FullType() { type = Type.Int16, nullable = true },
+			[typeof(Int32)] = new FullType() { type = Type.Int32, nullable = false },
+			[typeof(Int32?)] = new FullType() { type = Type.Int32, nullable = true },
+			[typeof(Int64)] = new FullType() { type = Type.Int64, nullable = false },
+			[typeof(Int64?)] = new FullType() { type = Type.Int64, nullable = true },
+			[typeof(Decimal)] = new FullType() { type = Type.Decimal, nullable = false },
+			[typeof(Decimal?)] = new FullType() { type = Type.Decimal, nullable = true },
+			[typeof(float)] = new FullType() { type = Type.Float32, nullable = false },
+			[typeof(float?)] = new FullType() { type = Type.Float32, nullable = true },
+			[typeof(double)] = new FullType() { type = Type.Float64, nullable = false },
+			[typeof(double?)] = new FullType() { type = Type.Float64, nullable = true },
+			[typeof(Guid)] = new FullType() { type = Type.Guid, nullable = false },
+			[typeof(Guid?)] = new FullType() { type = Type.Guid, nullable = true },
+			[typeof(String)] = new FullType() { type = Type.String, nullable = true },
+			[typeof(byte[])] = new FullType() { type = Type.BinaryData, nullable = true },
+			[typeof(DateTime)] = new FullType() { type = Type.DateTime, nullable = false },
+			[typeof(DateTime?)] = new FullType() { type = Type.DateTime, nullable = true },
+			[typeof(TimeSpan)] = new FullType() { type = Type.TimeSpan, nullable = false },
+			[typeof(TimeSpan?)] = new FullType() { type = Type.TimeSpan, nullable = true },
+		};
+
 		public struct FullType
 		{
 			public Type type;
@@ -46,7 +87,6 @@ namespace tabletransfer
 			public string[] names;
 			public IEnumerable<object[]> values;
 		}
-
 
 		/// <summary>
 		///		Reads table from stream.
@@ -245,7 +285,8 @@ namespace tabletransfer
 		/// <param name="values"></param>
 		/// <param name="types"></param>
 		/// <param name="names"></param>
-		public static void Write(Stream stream, IEnumerable<IEnumerable<object>> values, IList<FullType> types, IEnumerable<string> names = null)
+		/// <typeparam name="RowType"></typeparam>
+		public static void Write<RowType>(Stream stream, IEnumerator<RowType> values, IList<FullType> types, IEnumerable<string> names = null) where RowType : IEnumerable
 		{
 			using (var writer = new BinaryWriter(stream, System.Text.Encoding.Default, true))
 			{
@@ -285,11 +326,11 @@ namespace tabletransfer
 
 				// Now go through values and write them all
 				ulong rowNum = 0;
-				foreach (var row in values)
+				while (values.MoveNext())
 				{
 					// Write a 1 to indicate that there is another row.
 					writer.Write(true);
-					var columnEnumerator = row.GetEnumerator();
+					var columnEnumerator = values.Current.GetEnumerator();
 					for (int i = 0; i < columns; i++)
 					{
 						if (!columnEnumerator.MoveNext())
@@ -421,5 +462,24 @@ namespace tabletransfer
 				writer.Write(false);
 			}
 		}
+
+		public static void Write<RowType>(Stream stream, IEnumerable<RowType> values, IList<FullType> types, IEnumerable<string> names = null) where RowType : IEnumerable
+			=> Write(stream, values.GetEnumerator(), types, names);
+
+		public static void Write<RowType>(Stream stream, IEnumerator<RowType> values, IEnumerable<string> names = null) where RowType : IEnumerable
+		{
+			if (values.MoveNext())
+			{
+				var types = values.Current.Cast<object>().Select(x => mapping[x.GetType()]).ToArray();
+				Write(stream, new SkipFirstMoveNextEnumerator<RowType>(values), types, names);
+			}
+			else
+				Write(stream, Array.Empty<IEnumerable>(), Array.Empty<FullType>());
+		}
+
+		public static void Write<RowType>(Stream stream, IEnumerable<RowType> values, IEnumerable<string> names = null) where RowType : IEnumerable
+			=> Write(stream, values.GetEnumerator(), names);
+
+		private IEnumerable<IEnumerable<object>>
 	}
 }
