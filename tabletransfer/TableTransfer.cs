@@ -474,12 +474,46 @@ namespace tabletransfer
 				Write(stream, new SkipFirstMoveNextEnumerator<RowType>(values), types, names);
 			}
 			else
-				Write(stream, Array.Empty<IEnumerable>(), Array.Empty<FullType>());
+				WriteNonTable(stream);
 		}
 
 		public static void Write<RowType>(Stream stream, IEnumerable<RowType> values, IEnumerable<string> names = null) where RowType : IEnumerable
 			=> Write(stream, values.GetEnumerator(), names);
 
-		private IEnumerable<IEnumerable<object>>
+		private static void WriteNonTable(Stream stream)
+		{
+			Write(stream, Array.Empty<IEnumerable>(), Array.Empty<FullType>());
+		}
+
+		public static void WriteOneTable(Stream stream, IDataReader dataReader, IDictionary<string, FullType>)
+		{
+			// Helper function for iterating through the dataReader as Enumerator
+			IEnumerator<object[]> enumerate()
+			{
+				object[] objs = new object[dataReader.FieldCount];
+
+				// Doesn't do a read first because first read is happending in outer function.
+				do
+				{
+					dataReader.GetValues(objs);
+					yield return objs;
+				} while (dataReader.Read());
+			}
+
+			if (dataReader.Read())
+			{
+				string[] names = new string[dataReader.FieldCount];
+				System.Type[] types = new System.Type[dataReader.FieldCount];
+				for (int i = 0; i < dataReader.FieldCount; i++)
+				{
+					names[i] = dataReader.GetName(i);
+					types[i] = dataReader.GetFieldType(i);
+				}
+				Write(stream, enumerate(), types[int]names)
+			}
+			else
+				WriteNonTable(stream);
+		}
+
 	}
 }

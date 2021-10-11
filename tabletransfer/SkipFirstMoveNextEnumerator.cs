@@ -3,6 +3,10 @@ using System.Collections.Generic;
 
 namespace tabletransfer
 {
+	/// <summary>
+	/// Enumerator wrapper that skips the first movenext call that is made. This allows us to stay on an elment for an additional step.
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
 	internal class SkipFirstMoveNextEnumerator<T> : IEnumerator<T>
 	{
 		readonly IEnumerator<T> enumerator;
