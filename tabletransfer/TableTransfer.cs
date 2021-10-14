@@ -7,7 +7,6 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace tabletransfer
 {
@@ -470,8 +469,16 @@ namespace tabletransfer
 		{
 			if (values.MoveNext())
 			{
+				IEnumerator<RowType> enumerate()
+				{
+					// Does do a move next before the first yield return as the first move next will hav elready happened by the time this code has been reached
+					do
+						yield return values.Current;
+					while (values.MoveNext());
+				}
+
 				var types = values.Current.Cast<object>().Select(x => mapping[x.GetType()]).ToArray();
-				Write(stream, new SkipFirstMoveNextEnumerator<RowType>(values), types, names);
+				Write(stream, enumerate(), types, names);
 			}
 			else
 				WriteNonTable(stream);
@@ -485,7 +492,7 @@ namespace tabletransfer
 			Write(stream, Array.Empty<IEnumerable>(), Array.Empty<FullType>());
 		}
 
-		public static void WriteOneTable(Stream stream, IDataReader dataReader, IDictionary<string, FullType>)
+		public static void Write(Stream stream, IDataReader dataReader, IDictionary<string, FullType> typeMapping, bool includeNames = true)
 		{
 			// Helper function for iterating through the dataReader as Enumerator
 			IEnumerator<object[]> enumerate()
@@ -502,14 +509,17 @@ namespace tabletransfer
 
 			if (dataReader.Read())
 			{
-				string[] names = new string[dataReader.FieldCount];
-				System.Type[] types = new System.Type[dataReader.FieldCount];
+				var names = new string[dataReader.FieldCount];
+				var types = new FullType[dataReader.FieldCount];
 				for (int i = 0; i < dataReader.FieldCount; i++)
 				{
 					names[i] = dataReader.GetName(i);
-					types[i] = dataReader.GetFieldType(i);
+					if (includeNames && names[i] == null)
+						throw new Exception($"Column {i}: Can not have null names. Either don't include names or set names properly.");
+					types[i] = typeMapping[dataReader.GetDataTypeName(i)];
 				}
-				Write(stream, enumerate(), types[int]names)
+
+				Write(stream, enumerate(), types, includeNames ? names : null);
 			}
 			else
 				WriteNonTable(stream);
