@@ -261,17 +261,22 @@ namespace Gerk.tabletransfer
 			{
 				var dataReader = new EnumeratorDataReader();
 				if (names == null)
+				{
 					for (int i = 0; i < Columns; i++)
 					{
 						int c = i;
 						dataReader.Set(null, values, x => x[c], null);
 					}
+				}
 				else
+				{
 					for (int i = 0; i < Columns; i++)
 					{
 						int c = i;
 						dataReader.Set(names[c], values, x => x[c], null);
 					}
+				}
+
 				return dataReader;
 			}
 		}
