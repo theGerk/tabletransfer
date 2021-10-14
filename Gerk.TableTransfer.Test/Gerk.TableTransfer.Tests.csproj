@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\tabletransfer\tabletransfer.csproj" />
+    <ProjectReference Include="..\Gerk.TableTransfer\Gerk.TableTransfer.csproj" />
   </ItemGroup>
 
 </Project>
