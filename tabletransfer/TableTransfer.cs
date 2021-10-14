@@ -8,9 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace tabletransfer
+namespace Gerk.tabletransfer
 {
-
 	public static class TableTransfer
 	{
 		/// <summary>

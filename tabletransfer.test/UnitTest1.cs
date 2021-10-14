@@ -3,11 +3,11 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Xunit;
-using static tabletransfer.TableTransfer;
-using Type = tabletransfer.TableTransfer.Type;
+using static Gerk.tabletransfer.TableTransfer;
+using Type = Gerk.tabletransfer.TableTransfer.Type;
 using System.Collections.Generic;
 
-namespace tabletransfer.test
+namespace Gerk.tabletransfer.test
 {
 	public class UnitTest1
 	{
