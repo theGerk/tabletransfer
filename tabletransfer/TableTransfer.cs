@@ -1,5 +1,6 @@
 ﻿using Gerk.BinaryExtension;
 using Gerk.LinqExtensions;
+using Gerk.SpecialDataReaders;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -67,7 +68,7 @@ namespace Gerk.tabletransfer
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 		}
 
-		private static void Write(this BinaryWriter writer, Type type) => writer.Write((byte)type);
+		private static void WriteType(this BinaryWriter writer, Type type) => writer.Write((byte)type);
 		private static Type ReadType(this BinaryReader reader) => (Type)reader.ReadByte();
 
 		private static readonly Dictionary<System.Type, Type> mapping = new Dictionary<System.Type, Type>()
@@ -253,6 +254,26 @@ namespace Gerk.tabletransfer
 			/// Emuerates the rows. Each element is an array of objects representing values in order.
 			/// </summary>
 			public IEnumerable<object[]> values;
+
+			public int Columns => types.Length;
+
+			public IDataReader ToDataReader()
+			{
+				var dataReader = new EnumeratorDataReader();
+				if (names == null)
+					for (int i = 0; i < Columns; i++)
+					{
+						int c = i;
+						dataReader.Set(null, values, x => x[c], null);
+					}
+				else
+					for (int i = 0; i < Columns; i++)
+					{
+						int c = i;
+						dataReader.Set(names[c], values, x => x[c], null);
+					}
+				return dataReader;
+			}
 		}
 
 		/// <summary>
@@ -335,7 +356,7 @@ namespace Gerk.tabletransfer
 				// get types data buffered into memory stream so we can count the number of them before writing out to the actual stream.
 				foreach (var type in types)
 				{
-					writer.Write(type);
+					writer.WriteType(type);
 				}
 
 				// Write the column names if they are included
@@ -513,7 +534,11 @@ namespace Gerk.tabletransfer
 
 		private static void WriteNonTable(Stream stream)
 		{
+#if NET461_OR_GREATER
 			Write(stream, Array.Empty<IEnumerable>(), Array.Empty<Type>());
+#else
+			Write(stream, new IEnumerable[0], new Type[0]);
+#endif
 		}
 
 		public static void Write(Stream stream, IDataReader dataReader, IDictionary<string, Type> typeMapping, bool includeNames = true)

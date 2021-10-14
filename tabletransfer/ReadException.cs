@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Runtime.Serialization;
 
-namespace tabletransfer
+namespace Gerk.tabletransfer
 {
 	public abstract class ReadException : Exception
 	{
