@@ -80,67 +80,6 @@ namespace tabletransfer
 #endif
 		}
 
-		public struct ReadReturn
-		{
-			public FullType[] types;
-			public string[] names;
-			public IEnumerable<object[]> values;
-		}
-
-		/// <summary>
-		///		Reads table from stream.
-		///		<para>
-		///			<b>Important:</b> Do not continue to read from <paramref name="stream"/> until the <seealso cref="ReadReturn.values"/> property has been fully enumerated.
-		///		</para>
-		/// </summary>
-		/// <param name="stream">A readble stream at the start of a table encoded using the table transfer protocol</param>
-		/// <returns></returns>
-		public static ReadReturn Read(Stream stream)
-		{
-			var reader = new BinaryReader(stream, System.Text.Encoding.Default, true);
-			try
-			{
-				ReadReturn output = new ReadReturn();
-				// read version
-				{
-					var myVersion = Assembly.GetExecutingAssembly().GetName();
-					var version = reader.ReadInt32();
-					if (version != myVersion.Version.Major)
-						throw new WrongVersionException(version, myVersion);
-				}
-
-				// read column count
-				uint columns = reader.ReadUInt32();
-
-				// read if headers are being included
-				if (reader.ReadBoolean())
-					output.names = new string[columns];
-				else
-					output.names = null;
-
-				// read types in
-				output.types = new FullType[columns];
-				for (uint i = 0; i < columns; i++)
-				{
-					output.types[i].type = (Type)reader.ReadUInt32();
-					output.types[i].nullable = reader.ReadBoolean();
-				}
-
-				// read column names if they exist
-				if (output.names != null)
-					for (uint i = 0; i < columns; i++)
-						output.names[i] = reader.ReadString();
-
-
-				output.values = ReadRows(reader, columns, output.types);
-				return output;
-			}
-			catch
-			{
-				reader.Dispose();
-				throw;
-			}
-		}
 
 		/// <summary>
 		/// Helper function for <see cref="Read(Stream)"/>. Reads through the rows yeild returning.
@@ -274,6 +213,68 @@ namespace tabletransfer
 					yield return column;
 					rowNum++;
 				}
+			}
+		}
+
+		public struct ReadReturn
+		{
+			public FullType[] types;
+			public string[] names;
+			public IEnumerable<object[]> values;
+		}
+
+		/// <summary>
+		///		Reads table from stream.
+		///		<para>
+		///			<b>Important:</b> Do not continue to read from <paramref name="stream"/> until the <seealso cref="ReadReturn.values"/> property has been fully enumerated.
+		///		</para>
+		/// </summary>
+		/// <param name="stream">A readble stream at the start of a table encoded using the table transfer protocol</param>
+		/// <returns></returns>
+		public static ReadReturn Read(Stream stream)
+		{
+			var reader = new BinaryReader(stream, System.Text.Encoding.Default, true);
+			try
+			{
+				ReadReturn output = new ReadReturn();
+				// read version
+				{
+					var myVersion = Assembly.GetExecutingAssembly().GetName();
+					var version = reader.ReadInt32();
+					if (version != myVersion.Version.Major)
+						throw new WrongVersionException(version, myVersion);
+				}
+
+				// read column count
+				uint columns = reader.ReadUInt32();
+
+				// read if headers are being included
+				if (reader.ReadBoolean())
+					output.names = new string[columns];
+				else
+					output.names = null;
+
+				// read types in
+				output.types = new FullType[columns];
+				for (uint i = 0; i < columns; i++)
+				{
+					output.types[i].type = (Type)reader.ReadUInt32();
+					output.types[i].nullable = reader.ReadBoolean();
+				}
+
+				// read column names if they exist
+				if (output.names != null)
+					for (uint i = 0; i < columns; i++)
+						output.names[i] = reader.ReadString();
+
+
+				output.values = ReadRows(reader, columns, output.types);
+				return output;
+			}
+			catch
+			{
+				reader.Dispose();
+				throw;
 			}
 		}
 
@@ -524,6 +525,5 @@ namespace tabletransfer
 			else
 				WriteNonTable(stream);
 		}
-
 	}
 }
