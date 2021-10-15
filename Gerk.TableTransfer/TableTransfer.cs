@@ -255,8 +255,20 @@ namespace Gerk.tabletransfer
 			/// </summary>
 			public IEnumerable<object[]> values;
 
+			/// <summary>
+			/// Number of columns in the return.
+			/// </summary>
 			public int Columns => types.Length;
 
+			/// <summary>
+			/// Whether or not names are included.
+			/// </summary>
+			public bool IncludesNames => names != null;
+
+			/// <summary>
+			/// Treat the table as an IDataReader. Useful for certain database interfaces.
+			/// </summary>
+			/// <returns></returns>
 			public IDataReader ToDataReader()
 			{
 				var dataReader = new EnumeratorDataReader();
