@@ -9,9 +9,6 @@
 		<Copyright>MIT</Copyright>
 		<PackageProjectUrl>https://github.com/theGerk/tabletransfer</PackageProjectUrl>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<PackageId>Gerk.TableTransfer</PackageId>
-		<AssemblyName>Gerk.TableTransfer</AssemblyName>
-		<RootNamespace>Gerk.TableTransfer</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>
