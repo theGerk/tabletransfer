@@ -122,12 +122,14 @@ namespace Gerk.tabletransfer
 				private readonly uint columns;
 				private readonly Type[] types;
 				/// <summary>
-				/// Not currently used, but could be helpful for debuggin in the future.
+				/// Not currently used, but could be helpful for debugging in the future.
 				/// </summary>
 				private int rowNum = -1;
 
+				/// <inheritdoc/>
 				public object[] Current { get; private set; }
 
+				/// <inheritdoc/>
 				object IEnumerator.Current => Current;
 
 				/// <summary>
@@ -144,6 +146,7 @@ namespace Gerk.tabletransfer
 					this.types = types;
 				}
 
+				/// <inheritdoc/>
 				public void Dispose() => reader.Dispose();
 
 				public bool MoveNext()
@@ -267,6 +270,9 @@ namespace Gerk.tabletransfer
 						return false;
 				}
 
+				/// <summary>
+				/// Reset function is not supported.
+				/// </summary>
 				public void Reset() => throw new NotImplementedException();
 			}
 
