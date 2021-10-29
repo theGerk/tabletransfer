@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Xunit;
 using static Gerk.tabletransfer.TableTransfer;
 using Type = Gerk.tabletransfer.TableTransfer.Type;
+using Gerk.LinqExtensions;
 using System.Collections.Generic;
 
 namespace Gerk.tabletransfer.test
@@ -104,7 +105,7 @@ namespace Gerk.tabletransfer.test
 				throw new Exception("Names populated?");
 
 			int c = 0;
-			foreach (var _row in read.values)
+			foreach (var _row in read.values.AsEnumerable())
 			{
 				if (_row.Length != row.Length)
 					throw new Exception("Row length mismatch");
