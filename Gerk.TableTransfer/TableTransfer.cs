@@ -108,140 +108,168 @@ namespace Gerk.tabletransfer
 		};
 
 		/// <summary>
-		/// Helper function for <see cref="Read(Stream)"/>. Reads through the rows yeild returning.
-		/// </summary>
-		/// <param name="reader">The reader object. Will need to be disposed at the end of this function.</param>
-		/// <param name="columns"></param>
-		/// <param name="types"></param>
-		/// <returns></returns>
-		private static IEnumerable<object[]> ReadRows(BinaryReader reader, uint columns, Type[] types)
-		{
-			using (reader)
-			{
-				// variable is not currently used, but could be used for error/exception help and debugging
-				uint rowNum = 0;
-				while (reader.ReadBoolean())
-				{
-					object[] column = new object[columns];
-					for (uint i = 0; i < columns; i++)
-					{
-						switch (types[i])
-						{
-							case Type.NullableBool:
-								column[i] = reader.ReadNullableBoolean();
-								break;
-							case Type.NullableUInt8:
-								column[i] = reader.ReadNullableByte();
-								break;
-							case Type.NullableUInt16:
-								column[i] = reader.ReadNullableUInt16();
-								break;
-							case Type.NullableUInt32:
-								column[i] = reader.ReadNullableUInt32();
-								break;
-							case Type.NullableUInt64:
-								column[i] = reader.ReadNullableUInt64();
-								break;
-							case Type.NullableInt8:
-								column[i] = reader.ReadNullableSByte();
-								break;
-							case Type.NullableInt16:
-								column[i] = reader.ReadNullableInt16();
-								break;
-							case Type.NullableInt32:
-								column[i] = reader.ReadNullableInt32();
-								break;
-							case Type.NullableInt64:
-								column[i] = reader.ReadNullableInt64();
-								break;
-							case Type.NullableDecimal:
-								column[i] = reader.ReadNullableDecimal();
-								break;
-							case Type.NullableFloat32:
-								column[i] = reader.ReadNullableSingle();
-								break;
-							case Type.NullableFloat64:
-								column[i] = reader.ReadNullableDouble();
-								break;
-							case Type.NullableGuid:
-								column[i] = reader.ReadNullableGuid();
-								break;
-							case Type.NullableString:
-								column[i] = reader.ReadNullableString();
-								break;
-							case Type.NullableBinaryData:
-								column[i] = reader.ReadNullableBinaryData();
-								break;
-							case Type.NullableDateTime:
-								column[i] = reader.ReadNullableDateTime();
-								break;
-							case Type.NullableTimeSpan:
-								column[i] = reader.ReadNullableTimeSpan();
-								break;
-							case Type.Bool:
-								column[i] = reader.ReadBoolean();
-								break;
-							case Type.UInt8:
-								column[i] = reader.ReadByte();
-								break;
-							case Type.UInt16:
-								column[i] = reader.ReadUInt16();
-								break;
-							case Type.UInt32:
-								column[i] = reader.ReadUInt32();
-								break;
-							case Type.UInt64:
-								column[i] = reader.ReadUInt64();
-								break;
-							case Type.Int8:
-								column[i] = reader.ReadSByte();
-								break;
-							case Type.Int16:
-								column[i] = reader.ReadInt16();
-								break;
-							case Type.Int32:
-								column[i] = reader.ReadInt32();
-								break;
-							case Type.Int64:
-								column[i] = reader.ReadInt64();
-								break;
-							case Type.Decimal:
-								column[i] = reader.ReadDecimal();
-								break;
-							case Type.Float32:
-								column[i] = reader.ReadSingle();
-								break;
-							case Type.Float64:
-								column[i] = reader.ReadDouble();
-								break;
-							case Type.Guid:
-								column[i] = reader.ReadGuid();
-								break;
-							case Type.String:
-								column[i] = reader.ReadString();
-								break;
-							case Type.BinaryData:
-								column[i] = reader.ReadBinaryData();
-								break;
-							case Type.DateTime:
-								column[i] = reader.ReadDateTime();
-								break;
-							case Type.TimeSpan:
-								column[i] = reader.ReadTimeSpan();
-								break;
-						}
-					}
-					yield return column;
-					rowNum++;
-				}
-			}
-		}
-
-		/// <summary>
 		/// Basic output from reading table.
 		/// </summary>
-		public struct ReadReturn
+		public struct ReadReturn : IDisposable
 		{
+			// This needs to be done this way to support correct disposal.
+			/// <summary>
+			/// Enumerates values in a return.
+			/// </summary>
+			internal class ValueEnumerator : IEnumerator<object[]>
+			{
+				private readonly BinaryReader reader;
+				private readonly uint columns;
+				private readonly Type[] types;
+				/// <summary>
+				/// Not currently used, but could be helpful for debuggin in the future.
+				/// </summary>
+				private int rowNum = -1;
+
+				public object[] Current { get; private set; }
+
+				object IEnumerator.Current => Current;
+
+				/// <summary>
+				/// Helper function for <see cref="Read(Stream)"/>. Reads through the rows yeild returning.
+				/// </summary>
+				/// <param name="reader">The reader object. Will need to be disposed at the end of this function.</param>
+				/// <param name="columns"></param>
+				/// <param name="types"></param>
+				/// <returns></returns>
+				public ValueEnumerator(BinaryReader reader, uint columns, Type[] types)
+				{
+					this.reader = reader;
+					this.columns = columns;
+					this.types = types;
+				}
+
+				public void Dispose() => reader.Dispose();
+
+				public bool MoveNext()
+				{
+					if (reader.ReadBoolean())
+					{
+						object[] column = new object[columns];
+						for (uint i = 0; i < columns; i++)
+						{
+							switch (types[i])
+							{
+								case Type.NullableBool:
+									column[i] = reader.ReadNullableBoolean();
+									break;
+								case Type.NullableUInt8:
+									column[i] = reader.ReadNullableByte();
+									break;
+								case Type.NullableUInt16:
+									column[i] = reader.ReadNullableUInt16();
+									break;
+								case Type.NullableUInt32:
+									column[i] = reader.ReadNullableUInt32();
+									break;
+								case Type.NullableUInt64:
+									column[i] = reader.ReadNullableUInt64();
+									break;
+								case Type.NullableInt8:
+									column[i] = reader.ReadNullableSByte();
+									break;
+								case Type.NullableInt16:
+									column[i] = reader.ReadNullableInt16();
+									break;
+								case Type.NullableInt32:
+									column[i] = reader.ReadNullableInt32();
+									break;
+								case Type.NullableInt64:
+									column[i] = reader.ReadNullableInt64();
+									break;
+								case Type.NullableDecimal:
+									column[i] = reader.ReadNullableDecimal();
+									break;
+								case Type.NullableFloat32:
+									column[i] = reader.ReadNullableSingle();
+									break;
+								case Type.NullableFloat64:
+									column[i] = reader.ReadNullableDouble();
+									break;
+								case Type.NullableGuid:
+									column[i] = reader.ReadNullableGuid();
+									break;
+								case Type.NullableString:
+									column[i] = reader.ReadNullableString();
+									break;
+								case Type.NullableBinaryData:
+									column[i] = reader.ReadNullableBinaryData();
+									break;
+								case Type.NullableDateTime:
+									column[i] = reader.ReadNullableDateTime();
+									break;
+								case Type.NullableTimeSpan:
+									column[i] = reader.ReadNullableTimeSpan();
+									break;
+								case Type.Bool:
+									column[i] = reader.ReadBoolean();
+									break;
+								case Type.UInt8:
+									column[i] = reader.ReadByte();
+									break;
+								case Type.UInt16:
+									column[i] = reader.ReadUInt16();
+									break;
+								case Type.UInt32:
+									column[i] = reader.ReadUInt32();
+									break;
+								case Type.UInt64:
+									column[i] = reader.ReadUInt64();
+									break;
+								case Type.Int8:
+									column[i] = reader.ReadSByte();
+									break;
+								case Type.Int16:
+									column[i] = reader.ReadInt16();
+									break;
+								case Type.Int32:
+									column[i] = reader.ReadInt32();
+									break;
+								case Type.Int64:
+									column[i] = reader.ReadInt64();
+									break;
+								case Type.Decimal:
+									column[i] = reader.ReadDecimal();
+									break;
+								case Type.Float32:
+									column[i] = reader.ReadSingle();
+									break;
+								case Type.Float64:
+									column[i] = reader.ReadDouble();
+									break;
+								case Type.Guid:
+									column[i] = reader.ReadGuid();
+									break;
+								case Type.String:
+									column[i] = reader.ReadString();
+									break;
+								case Type.BinaryData:
+									column[i] = reader.ReadBinaryData();
+									break;
+								case Type.DateTime:
+									column[i] = reader.ReadDateTime();
+									break;
+								case Type.TimeSpan:
+									column[i] = reader.ReadTimeSpan();
+									break;
+							}
+						}
+						Current = column;
+						rowNum++;
+						return true;
+					}
+					else
+						return false;
+				}
+
+				public void Reset() => throw new NotImplementedException();
+			}
+
 			/// <summary>
 			/// The types for each column in order
 			/// </summary>
@@ -253,17 +281,22 @@ namespace Gerk.tabletransfer
 			/// <summary>
 			/// Emuerates the rows. Each element is an array of objects representing values in order.
 			/// </summary>
-			public IEnumerable<object[]> values;
+			public IEnumerator<object[]> values;
 
 			/// <summary>
 			/// Number of columns in the return.
 			/// </summary>
 			public int Columns => types.Length;
-
 			/// <summary>
 			/// Whether or not names are included.
 			/// </summary>
 			public bool IncludesNames => names != null;
+
+			/// <summary>
+			/// Does not read to the end of the table. Simply frees the managed resources that are being used.
+			/// </summary>
+			/// <seealso cref="ReadToEnd"/>
+			public void Dispose() => values.Dispose();
 
 			/// <summary>
 			/// Treat the table as an IDataReader. Useful for certain database interfaces.
@@ -290,6 +323,15 @@ namespace Gerk.tabletransfer
 				}
 
 				return dataReader;
+			}
+
+			// TODO: Optimize this. If rows are fixed size (no nullable, no strings, no binary data) then we can advance through the stream much faster. Even if they aren't fixed, we should be able to advance a fair bit quicker than this, but we have.
+			/// <summary>
+			/// Reads to the end of the file. Useful if you don't care about the data but need to get past it in the strea.
+			/// </summary>
+			public void ReadToEnd()
+			{
+				while (values.MoveNext()) { }
 			}
 		}
 
@@ -337,7 +379,7 @@ namespace Gerk.tabletransfer
 						output.names[i] = reader.ReadString();
 
 
-				output.values = ReadRows(reader, columns, output.types);
+				output.values = new ReadReturn.ValueEnumerator(reader, columns, output.types);
 				return output;
 			}
 			catch
@@ -350,11 +392,11 @@ namespace Gerk.tabletransfer
 		/// <summary>
 		/// Writes table to stream.
 		/// </summary>
-		/// <param name="stream"></param>
-		/// <param name="values"></param>
-		/// <param name="types"></param>
-		/// <param name="names"></param>
-		/// <typeparam name="RowType"></typeparam>
+		/// <param name="stream">The stream to write to.</param>
+		/// <param name="values">Enumerates rows. Each row must be the same length (number of columns) as there are elements in <paramref name="types"/>.</param>
+		/// <param name="types">The types of each column in the table.</param>
+		/// <param name="names">The names of each column in the table. Table will not include names if this is left <see langword="null"/>.</param>
+		/// <typeparam name="RowType">The type being used to describe a row.</typeparam>
 		public static void Write<RowType>(Stream stream, IEnumerator<RowType> values, IList<Type> types, IEnumerable<string> names = null) where RowType : IEnumerable
 		{
 			using (var writer = new BinaryWriter(stream, System.Text.Encoding.Default, true))
@@ -524,40 +566,76 @@ namespace Gerk.tabletransfer
 			}
 		}
 
+		/// <summary>
+		/// Writes table to stream.
+		/// </summary>
+		/// <param name="stream">The stream to write to.</param>
+		/// <param name="values">Enumerates rows. Each row must be the same length (number of columns) as there are elements in <paramref name="types"/>.</param>
+		/// <param name="types">The types of each column in the table.</param>
+		/// <param name="names">The names of each column in the table. Table will not include names if this is left <see langword="null"/>.</param>
+		/// <typeparam name="RowType">The type being used to describe a row.</typeparam>
 		public static void Write<RowType>(Stream stream, IEnumerable<RowType> values, IList<Type> types, IEnumerable<string> names = null) where RowType : IEnumerable
 			=> Write(stream, values.GetEnumerator(), types, names);
 
-		public static void Write<RowType>(Stream stream, IEnumerator<RowType> values, IEnumerable<string> names = null) where RowType : IEnumerable
-		{
-			if (values.MoveNext())
-			{
-				IEnumerator<RowType> enumerate()
-				{
-					// Does do a move next before the first yield return as the first move next will hav elready happened by the time this code has been reached
-					do
-						yield return values.Current;
-					while (values.MoveNext());
-				}
+		//// Unused code as it is deemed unsafe.
+		//// It is supposed to figure out type based on reflection, but the type can't be figured out if something is null.
+		//// Possibly half measure to work around is to iterate until we find a null.
+		///// <summary>
+		///// Writes table to stream.
+		///// </summary>
+		///// <param name="stream">The stream to write to.</param>
+		///// <param name="values">Enumerates rows. Each row must be the same length (number of columns) as there are elements in <paramref name="types"/>.</param>
+		///// <param name="names">The names of each column in the table. Table will not include names if this is left <see langword="null"/>.</param>
+		///// <typeparam name="RowType">The type being used to describe a row.</typeparam>
+		//public static void Write<RowType>(Stream stream, IEnumerator<RowType> values, IEnumerable<string> names = null) where RowType : IEnumerable
+		//{
+		//	if (values.MoveNext())
+		//	{
+		//		IEnumerator<RowType> enumerate()
+		//		{
+		//			// Does do a move next before the first yield return as the first move next will hav elready happened by the time this code has been reached
+		//			do
+		//				yield return values.Current;
+		//			while (values.MoveNext());
+		//		}
 
-				var types = values.Current.Cast<object>().Select(x => mapping[x.GetType()]).ToArray();
-				Write(stream, enumerate(), types, names);
-			}
-			else
-				WriteNonTable(stream);
-		}
+		//		var types = values.Current.Cast<object>().Select(x => mapping[x.GetType()]).ToArray();
+		//		Write(stream, enumerate(), types, names);
+		//	}
+		//	else
+		//		WriteNonTable(stream);
+		//}
 
-		public static void Write<RowType>(Stream stream, IEnumerable<RowType> values, IEnumerable<string> names = null) where RowType : IEnumerable
-			=> Write(stream, values.GetEnumerator(), names);
+		///// <summary>
+		///// Writes table to stream.
+		///// </summary>
+		///// <param name="stream">The stream to write to.</param>
+		///// <param name="values">Enumerates rows. Each row must be the same length (number of columns) as there are elements in <paramref name="types"/>.</param>
+		///// <param name="names">The names of each column in the table. Table will not include names if this is left <see langword="null"/>.</param>
+		///// <typeparam name="RowType">The type being used to describe a row.</typeparam>
+		//public static void Write<RowType>(Stream stream, IEnumerable<RowType> values, IEnumerable<string> names = null) where RowType : IEnumerable
+		//	=> Write(stream, values.GetEnumerator(), names);
 
+		/// <summary>
+		/// Writes a non-table to the stream (ie: no columns, no rows)
+		/// </summary>
+		/// <param name="stream">The stream to write to.</param>
 		private static void WriteNonTable(Stream stream)
 		{
-#if NET461_OR_GREATER
+#if !NET45
 			Write(stream, Array.Empty<IEnumerable>(), Array.Empty<Type>());
 #else
 			Write(stream, new IEnumerable[0], new Type[0]);
 #endif
 		}
 
+		/// <summary>
+		/// Writes a datareader table.
+		/// </summary>
+		/// <param name="stream"></param>
+		/// <param name="dataReader"></param>
+		/// <param name="typeMapping"></param>
+		/// <param name="includeNames"></param>
 		public static void Write(Stream stream, IDataReader dataReader, IDictionary<string, Type> typeMapping, bool includeNames = true)
 		{
 			// Helper function for iterating through the dataReader as Enumerator
