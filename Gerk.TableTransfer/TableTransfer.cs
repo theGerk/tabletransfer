@@ -583,45 +583,6 @@ namespace Gerk.tabletransfer
 		public static void Write<RowType>(Stream stream, IEnumerable<RowType> values, IList<Type> types, IEnumerable<string> names = null) where RowType : IEnumerable
 			=> Write(stream, values.GetEnumerator(), types, names);
 
-		//// Unused code as it is deemed unsafe.
-		//// It is supposed to figure out type based on reflection, but the type can't be figured out if something is null.
-		//// Possibly half measure to work around is to iterate until we find a null.
-		///// <summary>
-		///// Writes table to stream.
-		///// </summary>
-		///// <param name="stream">The stream to write to.</param>
-		///// <param name="values">Enumerates rows. Each row must be the same length (number of columns) as there are elements in <paramref name="types"/>.</param>
-		///// <param name="names">The names of each column in the table. Table will not include names if this is left <see langword="null"/>.</param>
-		///// <typeparam name="RowType">The type being used to describe a row.</typeparam>
-		//public static void Write<RowType>(Stream stream, IEnumerator<RowType> values, IEnumerable<string> names = null) where RowType : IEnumerable
-		//{
-		//	if (values.MoveNext())
-		//	{
-		//		IEnumerator<RowType> enumerate()
-		//		{
-		//			// Does do a move next before the first yield return as the first move next will hav elready happened by the time this code has been reached
-		//			do
-		//				yield return values.Current;
-		//			while (values.MoveNext());
-		//		}
-
-		//		var types = values.Current.Cast<object>().Select(x => mapping[x.GetType()]).ToArray();
-		//		Write(stream, enumerate(), types, names);
-		//	}
-		//	else
-		//		WriteNonTable(stream);
-		//}
-
-		///// <summary>
-		///// Writes table to stream.
-		///// </summary>
-		///// <param name="stream">The stream to write to.</param>
-		///// <param name="values">Enumerates rows. Each row must be the same length (number of columns) as there are elements in <paramref name="types"/>.</param>
-		///// <param name="names">The names of each column in the table. Table will not include names if this is left <see langword="null"/>.</param>
-		///// <typeparam name="RowType">The type being used to describe a row.</typeparam>
-		//public static void Write<RowType>(Stream stream, IEnumerable<RowType> values, IEnumerable<string> names = null) where RowType : IEnumerable
-		//	=> Write(stream, values.GetEnumerator(), names);
-
 		/// <summary>
 		/// Writes a non-table to the stream (ie: no columns, no rows)
 		/// </summary>
