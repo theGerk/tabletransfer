@@ -75,41 +75,41 @@ namespace Gerk.tabletransfer
 		private static void WriteType(this BinaryWriter writer, Type type) => writer.Write((byte)type);
 		private static Type ReadType(this BinaryReader reader) => (Type)reader.ReadByte();
 
-		//private static readonly Dictionary<System.Type, Type> mapping = new Dictionary<System.Type, Type>()
-		//{
-		//	[typeof(bool)] = Type.Bool,
-		//	[typeof(bool?)] = Type.NullableBool,
-		//	[typeof(byte)] = Type.UInt8,
-		//	[typeof(byte?)] = Type.NullableUInt8,
-		//	[typeof(UInt16)] = Type.UInt16,
-		//	[typeof(UInt16?)] = Type.NullableUInt16,
-		//	[typeof(UInt32)] = Type.UInt32,
-		//	[typeof(UInt32?)] = Type.NullableUInt32,
-		//	[typeof(UInt64)] = Type.UInt64,
-		//	[typeof(UInt64?)] = Type.NullableUInt64,
-		//	[typeof(sbyte)] = Type.Int8,
-		//	[typeof(sbyte?)] = Type.NullableInt8,
-		//	[typeof(Int16)] = Type.Int16,
-		//	[typeof(Int16?)] = Type.NullableInt16,
-		//	[typeof(Int32)] = Type.Int32,
-		//	[typeof(Int32?)] = Type.NullableInt32,
-		//	[typeof(Int64)] = Type.Int64,
-		//	[typeof(Int64?)] = Type.NullableInt64,
-		//	[typeof(Decimal)] = Type.Decimal,
-		//	[typeof(Decimal?)] = Type.NullableDecimal,
-		//	[typeof(float)] = Type.Float32,
-		//	[typeof(float?)] = Type.NullableFloat32,
-		//	[typeof(double)] = Type.Float64,
-		//	[typeof(double?)] = Type.NullableFloat64,
-		//	[typeof(Guid)] = Type.Guid,
-		//	[typeof(Guid?)] = Type.NullableGuid,
-		//	[typeof(String)] = Type.NullableString,
-		//	[typeof(byte[])] = Type.NullableBinaryData,
-		//	[typeof(DateTime)] = Type.DateTime,
-		//	[typeof(DateTime?)] = Type.NullableDateTime,
-		//	[typeof(TimeSpan)] = Type.TimeSpan,
-		//	[typeof(TimeSpan?)] = Type.NullableTimeSpan,
-		//};
+		private static readonly Dictionary<System.Type, Type> mapping = new Dictionary<System.Type, Type>()
+		{
+			[typeof(bool)] = Type.Bool,
+			[typeof(bool?)] = Type.NullableBool,
+			[typeof(byte)] = Type.UInt8,
+			[typeof(byte?)] = Type.NullableUInt8,
+			[typeof(UInt16)] = Type.UInt16,
+			[typeof(UInt16?)] = Type.NullableUInt16,
+			[typeof(UInt32)] = Type.UInt32,
+			[typeof(UInt32?)] = Type.NullableUInt32,
+			[typeof(UInt64)] = Type.UInt64,
+			[typeof(UInt64?)] = Type.NullableUInt64,
+			[typeof(sbyte)] = Type.Int8,
+			[typeof(sbyte?)] = Type.NullableInt8,
+			[typeof(Int16)] = Type.Int16,
+			[typeof(Int16?)] = Type.NullableInt16,
+			[typeof(Int32)] = Type.Int32,
+			[typeof(Int32?)] = Type.NullableInt32,
+			[typeof(Int64)] = Type.Int64,
+			[typeof(Int64?)] = Type.NullableInt64,
+			[typeof(Decimal)] = Type.Decimal,
+			[typeof(Decimal?)] = Type.NullableDecimal,
+			[typeof(float)] = Type.Float32,
+			[typeof(float?)] = Type.NullableFloat32,
+			[typeof(double)] = Type.Float64,
+			[typeof(double?)] = Type.NullableFloat64,
+			[typeof(Guid)] = Type.Guid,
+			[typeof(Guid?)] = Type.NullableGuid,
+			[typeof(String)] = Type.NullableString,
+			[typeof(byte[])] = Type.NullableBinaryData,
+			[typeof(DateTime)] = Type.DateTime,
+			[typeof(DateTime?)] = Type.NullableDateTime,
+			[typeof(TimeSpan)] = Type.TimeSpan,
+			[typeof(TimeSpan?)] = Type.NullableTimeSpan,
+		};
 
 		#region Reading
 		/// <summary>
@@ -355,7 +355,7 @@ namespace Gerk.tabletransfer
 		/// <param name="stream">A readble stream at the start of a table encoded using the table transfer protocol</param>
 		/// <returns></returns>
 		public static ReadReturn Read(Stream stream)
-		{ 
+		{
 			var reader = new BinaryReader(stream, System.Text.Encoding.Default, true);
 			try
 			{
@@ -571,7 +571,7 @@ namespace Gerk.tabletransfer
 			if (columnEnumerator.MoveNext())
 				throw new Exception($"More elements in row {rowNum} than there are in {nameof(types)}");
 		}
-#endregion
+		#endregion
 
 		/// <summary>
 		/// Writes table to stream.
@@ -611,26 +611,12 @@ namespace Gerk.tabletransfer
 			=> Write(stream, values.GetEnumerator(), types, names);
 
 		/// <summary>
-		/// Writes a non-table to the stream (ie: no columns, no rows)
-		/// </summary>
-		/// <param name="stream">The stream to write to.</param>
-		private static void WriteNonTable(Stream stream)
-		{
-#if !NET45
-			Write(stream, Array.Empty<IEnumerable>(), Array.Empty<Type>());
-#else
-			Write(stream, new IEnumerable[0], new Type[0]);
-#endif
-		}
-
-		/// <summary>
 		/// Writes a datareader table.
 		/// </summary>
 		/// <param name="stream"></param>
 		/// <param name="dataReader"></param>
-		/// <param name="typeMapping"></param>
 		/// <param name="includeNames"></param>
-		public static void Write(Stream stream, IDataReader dataReader, IDictionary<string, Type> typeMapping, bool includeNames = true)
+		public static void Write(Stream stream, IDataReader dataReader, bool includeNames = true)
 		{
 			// Helper function for iterating through the dataReader as Enumerator
 			IEnumerator<object[]> enumerate()
@@ -638,29 +624,24 @@ namespace Gerk.tabletransfer
 				object[] objs = new object[dataReader.FieldCount];
 
 				// Doesn't do a read first because first read is happending in outer function.
-				do
+				while (dataReader.Read())
 				{
 					dataReader.GetValues(objs);
 					yield return objs;
-				} while (dataReader.Read());
-			}
-
-			if (dataReader.Read())
-			{
-				var names = new string[dataReader.FieldCount];
-				var types = new Type[dataReader.FieldCount];
-				for (int i = 0; i < dataReader.FieldCount; i++)
-				{
-					names[i] = dataReader.GetName(i);
-					if (includeNames && names[i] == null)
-						throw new Exception($"Column {i}: Can not have null names. Either don't include names or set names properly.");
-					types[i] = typeMapping[dataReader.GetDataTypeName(i)];
 				}
-
-				Write(stream, enumerate(), types, includeNames ? names : null);
 			}
-			else
-				WriteNonTable(stream);
+
+			var names = new string[dataReader.FieldCount];
+			var types = new Type[dataReader.FieldCount];
+			for (int i = 0; i < dataReader.FieldCount; i++)
+			{
+				names[i] = dataReader.GetName(i);
+				if (includeNames && names[i] == null)
+					throw new Exception($"Column {i}: Can not have null names. Either don't include names or set names properly.");
+				types[i] = mapping[dataReader.GetFieldType(i)];
+			}
+
+			Write(stream, enumerate(), types, includeNames ? names : null);
 		}
 
 		private static async Task DumpBuffer(MemoryStream buffer, Stream realStream)
@@ -677,10 +658,11 @@ namespace Gerk.tabletransfer
 		/// <param name="values">Enumerates rows. Each row must be the same length (number of columns) as there are elements in <paramref name="types"/>.</param>
 		/// <param name="types">The types of each column in the table.</param>
 		/// <param name="names">The names of each column in the table. Table will not include names if this is left <see langword="null"/>.</param>
+		/// <param name="bufferMinimum">The minimum size of the buffer in bytes, the buffer will possibly pass this size, however it is not gaurenteed.</param>
 		/// <typeparam name="RowType">The type being used to describe a row.</typeparam>
-		public static async Task WriteAsync<RowType>(Stream stream, IEnumerator<RowType> values, IList<Type> types, IEnumerable<string> names = null, int bufferMinimum = 1024 * 8) where RowType : IEnumerable
+		public static async Task WriteAsync<RowType>(Stream stream, IEnumerator<RowType> values, IList<Type> types, IEnumerable<string> names = null, int bufferMinimum = 1024 * 64) where RowType : IEnumerable
 		{
-			MemoryStream buffer = new MemoryStream(bufferMinimum + 100);
+			using (var buffer = new MemoryStream(bufferMinimum + 1024))
 			using (var writer = new BinaryWriter(buffer, System.Text.Encoding.Default, true))
 			{
 				uint columns = WriteHeaderData(writer, types, names);
@@ -714,59 +696,36 @@ namespace Gerk.tabletransfer
 			=> WriteAsync(stream, values.GetEnumerator(), types, names);
 
 		/// <summary>
-		/// Writes a non-table to the stream (ie: no columns, no rows)
-		/// </summary>
-		/// <param name="stream">The stream to write to.</param>
-		private static Task WriteNonTableAsync(Stream stream)
-			=> WriteAsync(
-				stream,
-#if !NET45
-				Array.Empty<IEnumerable>(), 
-				Array.Empty<Type>()
-#else
-				new IEnumerable[0],
-				new Type[0]
-#endif
-			);
-
-		/// <summary>
 		/// Writes a datareader table.
 		/// </summary>
 		/// <param name="stream"></param>
 		/// <param name="dataReader"></param>
-		/// <param name="typeMapping"></param>
 		/// <param name="includeNames"></param>
-		public static Task WriteAsync(Stream stream, IDataReader dataReader, IDictionary<string, Type> typeMapping, bool includeNames = true)
+		public static Task WriteAsync(Stream stream, IDataReader dataReader, bool includeNames = true)
 		{
 			// Helper function for iterating through the dataReader as Enumerator
 			IEnumerator<object[]> enumerate()
 			{
 				object[] objs = new object[dataReader.FieldCount];
 
-				// Doesn't do a read first because first read is happending in outer function.
-				do
+				while (dataReader.Read())
 				{
 					dataReader.GetValues(objs);
 					yield return objs;
-				} while (dataReader.Read());
-			}
-
-			if (dataReader.Read())
-			{
-				var names = new string[dataReader.FieldCount];
-				var types = new Type[dataReader.FieldCount];
-				for (int i = 0; i < dataReader.FieldCount; i++)
-				{
-					names[i] = dataReader.GetName(i);
-					if (includeNames && names[i] == null)
-						throw new Exception($"Column {i}: Can not have null names. Either don't include names or set names properly.");
-					types[i] = typeMapping[dataReader.GetDataTypeName(i)];
 				}
-
-				return WriteAsync(stream, enumerate(), types, includeNames ? names : null);
 			}
-			else
-				return WriteNonTableAsync(stream);
+
+			var names = new string[dataReader.FieldCount];
+			var types = new Type[dataReader.FieldCount];
+			for (int i = 0; i < dataReader.FieldCount; i++)
+			{
+				names[i] = dataReader.GetName(i);
+				if (includeNames && names[i] == null)
+					throw new Exception($"Column {i}: Can not have null names. Either don't include names or set names properly.");
+				types[i] = mapping[dataReader.GetFieldType(i)];
+			}
+
+			return WriteAsync(stream, enumerate(), types, includeNames ? names : null);
 		}
 		#endregion
 	}
