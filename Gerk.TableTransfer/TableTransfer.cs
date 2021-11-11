@@ -10,7 +10,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Gerk.tabletransfer
+namespace Gerk.TableTransfer
 {
 	/// <summary>
 	/// Table transfer <see langword="static"/> functions.

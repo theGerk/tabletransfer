@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Runtime.Serialization;
 
-namespace Gerk.tabletransfer
+namespace Gerk.TableTransfer
 {
 	/// <summary>
 	/// Exception raised when parsing serialized table.

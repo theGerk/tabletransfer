@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Gerk.tabletransfer.test
+namespace Gerk.TableTransfer.Tests
 {
 	static class WeirdStuff
 	{
