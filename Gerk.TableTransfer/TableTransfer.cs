@@ -597,6 +597,32 @@ namespace Gerk.TableTransfer
 			if (columnEnumerator.MoveNext())
 				throw new Exception($"More elements in row {rowNum} than there are in {nameof(types)}");
 		}
+
+		private static (Type[] Types, string[] Names, IEnumerator<object[]> Enumerator) GetMetaData(IDataReader dataReader, IDictionary<string, string> nameMapping)
+		{
+			// Helper function for iterating through the dataReader as Enumerator
+			IEnumerator<object[]> enumerate()
+			{
+				object[] objs = new object[dataReader.FieldCount];
+
+				while (dataReader.Read())
+				{
+					dataReader.GetValues(objs);
+					yield return objs;
+				}
+			}
+
+			var names = new string[dataReader.FieldCount];
+			var types = new Type[dataReader.FieldCount];
+			for (int i = 0; i < dataReader.FieldCount; i++)
+			{
+				var name = dataReader.GetName(i);
+				names[i] = (nameMapping != null && nameMapping.TryGetValue(name, out var newName)) ? newName : name;
+				types[i] = mapping[dataReader.GetFieldType(i)];
+			}
+
+			return (types, names, enumerate());
+		}
 		#endregion
 
 		/// <summary>
@@ -637,37 +663,17 @@ namespace Gerk.TableTransfer
 			=> Write(stream, values.GetEnumerator(), types, names);
 
 		/// <summary>
-		/// Writes a datareader table.
+		/// Writes a datareader as a table to the stream.
 		/// </summary>
-		/// <param name="stream"></param>
-		/// <param name="dataReader"></param>
-		/// <param name="includeNames"></param>
-		public static void Write(Stream stream, IDataReader dataReader, bool includeNames = true)
+		/// <param name="stream">The stream to write to.</param>
+		/// <param name="dataReader">A datareader to to read from.</param>
+		/// <param name="includeNames">Should column names be included in the serialized table.</param>
+		/// <param name="columnMapping">Maps any column names that are a key in this to their associated value. Leave null not to use.</param>
+		public static void Write(Stream stream, IDataReader dataReader, bool includeNames = true, IDictionary<string, string> columnMapping = null)
 		{
-			// Helper function for iterating through the dataReader as Enumerator
-			IEnumerator<object[]> enumerate()
-			{
-				object[] objs = new object[dataReader.FieldCount];
+			var meta = GetMetaData(dataReader, columnMapping);
 
-				// Doesn't do a read first because first read is happending in outer function.
-				while (dataReader.Read())
-				{
-					dataReader.GetValues(objs);
-					yield return objs;
-				}
-			}
-
-			var names = new string[dataReader.FieldCount];
-			var types = new Type[dataReader.FieldCount];
-			for (int i = 0; i < dataReader.FieldCount; i++)
-			{
-				names[i] = dataReader.GetName(i);
-				if (includeNames && names[i] == null)
-					throw new Exception($"Column {i}: Can not have null names. Either don't include names or set names properly.");
-				types[i] = mapping[dataReader.GetFieldType(i)];
-			}
-
-			Write(stream, enumerate(), types, includeNames ? names : null);
+			Write(stream, meta.Enumerator, meta.Types, includeNames ? meta.Names : null);
 		}
 
 		private static async Task DumpBuffer(MemoryStream buffer, Stream realStream)
@@ -722,36 +728,17 @@ namespace Gerk.TableTransfer
 			=> WriteAsync(stream, values.GetEnumerator(), types, names);
 
 		/// <summary>
-		/// Writes a datareader table.
+		/// Writes a datareader as a table to the stream.
 		/// </summary>
-		/// <param name="stream"></param>
-		/// <param name="dataReader"></param>
-		/// <param name="includeNames"></param>
-		public static Task WriteAsync(Stream stream, IDataReader dataReader, bool includeNames = true)
+		/// <param name="stream">The stream to write to.</param>
+		/// <param name="dataReader">A datareader to to read from.</param>
+		/// <param name="includeNames">Should column names be included in the serialized table.</param>
+		/// <param name="columnMapping">Maps any column names that are a key in this to their associated value. Leave null not to use.</param>
+		public static Task WriteAsync(Stream stream, IDataReader dataReader, bool includeNames = true, IDictionary<string, string> columnMapping = null)
 		{
-			// Helper function for iterating through the dataReader as Enumerator
-			IEnumerator<object[]> enumerate()
-			{
-				object[] objs = new object[dataReader.FieldCount];
+			var meta = GetMetaData(dataReader, columnMapping);
 
-				while (dataReader.Read())
-				{
-					dataReader.GetValues(objs);
-					yield return objs;
-				}
-			}
-
-			var names = new string[dataReader.FieldCount];
-			var types = new Type[dataReader.FieldCount];
-			for (int i = 0; i < dataReader.FieldCount; i++)
-			{
-				names[i] = dataReader.GetName(i);
-				if (includeNames && names[i] == null)
-					throw new Exception($"Column {i}: Can not have null names. Either don't include names or set names properly.");
-				types[i] = mapping[dataReader.GetFieldType(i)];
-			}
-
-			return WriteAsync(stream, enumerate(), types, includeNames ? names : null);
+			return WriteAsync(stream, meta.Enumerator, meta.Types, includeNames ? meta.Names : null);
 		}
 		#endregion
 	}
