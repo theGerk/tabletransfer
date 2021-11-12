@@ -9,7 +9,7 @@ using Gerk.LinqExtensions;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Gerk.TableTransfer.test
+namespace Gerk.TableTransfer.Tests
 {
 	public class UnitTest1
 	{

@@ -110,6 +110,43 @@ namespace Gerk.TableTransfer
 			[typeof(TimeSpan)] = Type.TimeSpan,
 			[typeof(TimeSpan?)] = Type.NullableTimeSpan,
 		};
+		private static readonly Dictionary<Type, System.Type> unmapping = new Dictionary<Type, System.Type>()
+		{
+			[Type.Bool] = typeof(bool),
+			[Type.NullableBool] = typeof(bool?),
+			[Type.UInt8] = typeof(byte),
+			[Type.NullableUInt8] = typeof(byte?),
+			[Type.UInt16] = typeof(ushort),
+			[Type.NullableUInt16] = typeof(ushort?),
+			[Type.UInt32] = typeof(uint),
+			[Type.NullableUInt32] = typeof(uint?),
+			[Type.UInt64] = typeof(ulong),
+			[Type.NullableUInt64] = typeof(ulong?),
+			[Type.Int8] = typeof(sbyte),
+			[Type.NullableInt8] = typeof(sbyte?),
+			[Type.Int16] = typeof(short),
+			[Type.NullableInt16] = typeof(short?),
+			[Type.Int32] = typeof(int),
+			[Type.NullableInt32] = typeof(int?),
+			[Type.Int64] = typeof(long),
+			[Type.NullableInt64] = typeof(long?),
+			[Type.Decimal] = typeof(decimal),
+			[Type.NullableDecimal] = typeof(decimal?),
+			[Type.Float32] = typeof(float),
+			[Type.NullableFloat32] = typeof(float?),
+			[Type.Float64] = typeof(double),
+			[Type.NullableFloat64] = typeof(double?),
+			[Type.Guid] = typeof(Guid),
+			[Type.NullableGuid] = typeof(Guid?),
+			[Type.String] = typeof(string),
+			[Type.NullableString] = typeof(string),
+			[Type.BinaryData] = typeof(byte[]),
+			[Type.NullableBinaryData] = typeof(byte[]),
+			[Type.DateTime] = typeof(DateTime),
+			[Type.NullableDateTime] = typeof(DateTime?),
+			[Type.TimeSpan] = typeof(TimeSpan),
+			[Type.NullableTimeSpan] = typeof(TimeSpan?),
+		};
 
 		#region Reading
 		/// <summary>
@@ -316,21 +353,10 @@ namespace Gerk.TableTransfer
 			public IDataReader ToDataReader()
 			{
 				var dataReader = new EnumeratorDataReader();
-				if (names == null)
+				for (int i = 0; i < Columns; i++)
 				{
-					for (int i = 0; i < Columns; i++)
-					{
-						int c = i;
-						dataReader.Set(null, values, x => x[c], null);
-					}
-				}
-				else
-				{
-					for (int i = 0; i < Columns; i++)
-					{
-						int c = i;
-						dataReader.Set(names[c], values, x => x[c], null);
-					}
+					int c = i;
+					dataReader.Set(names?[c], values, x => x[c], null, unmapping[types[c]]);
 				}
 
 				return dataReader;
