@@ -9,13 +9,13 @@
 		<Copyright>MIT</Copyright>
 		<PackageProjectUrl>https://github.com/theGerk/tabletransfer</PackageProjectUrl>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<Version>1.0.4</Version>
+		<Version>1.0.5</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
 	  <PackageReference Include="Gerk.BinaryExtension" Version="2.0.0" />
-	  <PackageReference Include="Gerk.LinqExtensions" Version="2.0.1" />
-	  <PackageReference Include="Gerk.SpecialDataReaders" Version="1.1.0" />
+	  <PackageReference Include="Gerk.LinqExtensions" Version="2.0.2" />
+	  <PackageReference Include="Gerk.SpecialDataReaders" Version="1.1.1" />
 	</ItemGroup>
 
 </Project>
