@@ -8,6 +8,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Gerk.TableTransfer
@@ -163,10 +164,10 @@ namespace Gerk.TableTransfer
 				private readonly BinaryReader reader;
 				private readonly uint columns;
 				private readonly Type[] types;
-				/// <summary>
-				/// Not currently used, but could be helpful for debugging in the future.
-				/// </summary>
-				private int rowNum = -1;
+				///// <summary>
+				///// Not currently used, but could be helpful for debugging in the future.
+				///// </summary>
+				//private int rowNum = -1;
 
 				/// <inheritdoc/>
 				public object[] Current { get; private set; }
@@ -189,7 +190,7 @@ namespace Gerk.TableTransfer
 				}
 
 				/// <inheritdoc/>
-				public void Dispose() => reader.Dispose();
+				public void Dispose() { }
 
 				public bool MoveNext()
 				{
@@ -305,7 +306,7 @@ namespace Gerk.TableTransfer
 							}
 						}
 						Current = column;
-						rowNum++;
+						//rowNum++;
 						return true;
 					}
 					else
@@ -380,50 +381,51 @@ namespace Gerk.TableTransfer
 		/// </summary>
 		/// <param name="stream">A readble stream at the start of a table encoded using the table transfer protocol</param>
 		/// <returns></returns>
-		public static ReadReturn Read(Stream stream)
+		public static ReadReturn Read(Stream stream) => Read(new BinaryReader(stream, Encoding.UTF8, true));
+
+		/// <summary>
+		///		Reads table from stream.
+		///		<para>
+		///			<b>Important:</b> Do not continue to read from <paramref name="reader"/> or its underlying <see cref="Stream"/> until the <seealso cref="ReadReturn.values"/> property has been fully enumerated.
+		///		</para>
+		/// </summary>
+		/// <param name="reader">A reader to read the data out of.</param>
+		/// <returns></returns>
+		public static ReadReturn Read(BinaryReader reader)
 		{
-			var reader = new BinaryReader(stream, System.Text.Encoding.Default, true);
-			try
+			var output = new ReadReturn();
+			// read version
 			{
-				ReadReturn output = new ReadReturn();
-				// read version
-				{
-					var myVersion = Assembly.GetExecutingAssembly().GetName();
-					var version = reader.ReadInt32();
-					if (version != myVersion.Version.Major)
-						throw new WrongVersionException(version, myVersion);
-				}
+				var myVersion = Assembly.GetExecutingAssembly().GetName();
+				var version = reader.ReadInt32();
+				if (version != myVersion.Version.Major)
+					throw new WrongVersionException(version, myVersion);
+			}
 
-				// read column count
-				uint columns = reader.ReadUInt32();
+			// read column count
+			uint columns = reader.ReadUInt32();
 
-				// read if headers are being included
-				if (reader.ReadBoolean())
-					output.names = new string[columns];
-				else
-					output.names = null;
+			// read if headers are being included
+			if (reader.ReadBoolean())
+				output.names = new string[columns];
+			else
+				output.names = null;
 
-				// read types in
-				output.types = new Type[columns];
+			// read types in
+			output.types = new Type[columns];
+			for (uint i = 0; i < columns; i++)
+			{
+				output.types[i] = reader.ReadType();
+			}
+
+			// read column names if they exist
+			if (output.names != null)
 				for (uint i = 0; i < columns; i++)
-				{
-					output.types[i] = reader.ReadType();
-				}
-
-				// read column names if they exist
-				if (output.names != null)
-					for (uint i = 0; i < columns; i++)
-						output.names[i] = reader.ReadString();
+					output.names[i] = reader.ReadString();
 
 
-				output.values = new ReadReturn.ValueEnumerator(reader, columns, output.types);
-				return output;
-			}
-			catch
-			{
-				reader.Dispose();
-				throw;
-			}
+			output.values = new ReadReturn.ValueEnumerator(reader, columns, output.types);
+			return output;
 		}
 		#endregion
 
@@ -624,6 +626,7 @@ namespace Gerk.TableTransfer
 			return (types, names, enumerate());
 		}
 		#endregion
+
 
 		/// <summary>
 		/// Writes table to stream.
