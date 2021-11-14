@@ -149,6 +149,13 @@ namespace Gerk.TableTransfer
 			[Type.NullableTimeSpan] = typeof(TimeSpan?),
 		};
 
+		/// <summary>
+		/// Gets the CSharp type from the Type enum
+		/// </summary>
+		/// <param name="t"></param>
+		/// <returns></returns>
+		public static System.Type GetCSharpType(this Type t) => unmapping[t];
+
 		#region Reading
 		/// <summary>
 		/// Basic output from reading table.
