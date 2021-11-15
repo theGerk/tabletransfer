@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net6;net5;netstandard2.1;netstandard2.0;net461;net45</TargetFrameworks>
+		<TargetFrameworks>net6;net5;netstandard2.1;netstandard2.0;net461;net451</TargetFrameworks>
 		<Authors>Benji Altman</Authors>
 		<Company></Company>
 		<Description>C# wraper for table transfer protocol</Description>
@@ -9,13 +9,13 @@
 		<Copyright>MIT</Copyright>
 		<PackageProjectUrl>https://github.com/theGerk/tabletransfer</PackageProjectUrl>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<Version>1.0.5</Version>
+		<Version>1.0.6</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
 	  <PackageReference Include="Gerk.BinaryExtension" Version="2.0.0" />
-	  <PackageReference Include="Gerk.LinqExtensions" Version="2.0.2" />
-	  <PackageReference Include="Gerk.SpecialDataReaders" Version="1.1.1" />
+	  <PackageReference Include="Gerk.LinqExtensions" Version="2.1.0" />
+	  <PackageReference Include="Gerk.SpecialDataReaders" Version="1.1.2" />
 	</ItemGroup>
 
 </Project>
