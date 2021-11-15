@@ -10,6 +10,8 @@
 		<PackageProjectUrl>https://github.com/theGerk/tabletransfer</PackageProjectUrl>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<Version>1.0.6</Version>
+		<RepositoryUrl>https://github.com/theGerk/tabletransfer</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
 	</PropertyGroup>
 
 	<ItemGroup>
