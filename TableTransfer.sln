@@ -1,11 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31702.278
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gerk.TableTransfer", "Gerk.TableTransfer\Gerk.TableTransfer.csproj", "{85043C6A-FDB5-4563-980F-AF833367CE14}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gerk.TableTransfer.Tests", "Gerk.TableTransfer.Test\Gerk.TableTransfer.Tests.csproj", "{6B4FB246-2067-492B-94FF-AE54DF505C74}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{51A7477E-4064-4815-8C1A-01C08ACC0C19}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
